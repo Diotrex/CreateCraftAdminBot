@@ -3,6 +3,7 @@ import logging
 import sys
 import os
 from datetime import datetime, timezone
+from aiohttp import web
 from typing import Any, Dict, List, Optional, Union
 
 from aiogram import Bot, Dispatcher, F, Router, types
@@ -1571,7 +1572,12 @@ async def set_commands(bot: Bot):
     ]
     await bot.set_my_commands(commands)
 
+# В начале файла добавь импорт:
+from aiohttp import web
 
+# ...
+
+# Замени функцию main():
 async def main():
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
     await init_db()
@@ -1582,8 +1588,17 @@ async def main():
 
     await set_commands(bot)
     await bot.delete_webhook(drop_pending_updates=True)
+    
+    # Health-check сервер
+    app = web.Application()
+    app.router.add_get("/", lambda r: web.Response(text="OK"))
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, "0.0.0.0", 10000)
+    await site.start()
+    logging.info("Health-check server started on port 10000")
+    
     await dp.start_polling(bot)
-
 
 if __name__ == "__main__":
     asyncio.run(main())
