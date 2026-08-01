@@ -1577,7 +1577,6 @@ from aiohttp import web
 
 # ...
 
-# Замени функцию main():
 async def main():
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
     await init_db()
@@ -1589,7 +1588,7 @@ async def main():
     await set_commands(bot)
     await bot.delete_webhook(drop_pending_updates=True)
     
-    # Health-check сервер
+    # Health-check сервер в отдельной таске
     app = web.Application()
     app.router.add_get("/", lambda r: web.Response(text="OK"))
     runner = web.AppRunner(app)
@@ -1598,6 +1597,7 @@ async def main():
     await site.start()
     logging.info("Health-check server started on port 10000")
     
+    # Бот
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
